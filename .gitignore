@@ -12,6 +12,9 @@ uploads/
 # Docker volumes
 data/
 
+# Backups
+backups/
+
 # Logs
 *.log
 
