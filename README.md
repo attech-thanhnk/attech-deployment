@@ -8,7 +8,12 @@ Production deployment configuration for Attech fullstack application.
 - **Backend API**: https://api.attech.online
 - **VPS**: Ubuntu 22.04 on 103.162.31.91
 
-## Quick Start
+## 📋 Documentation
+
+- **[DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)** - Complete guide for deploying to new domain/VPS
+- **[config.sh](config.sh)** - Central configuration file (edit this for new deployments)
+
+## 🚀 Quick Start (Current VPS)
 
 ```bash
 # Clone repo on VPS
