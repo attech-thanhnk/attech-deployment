@@ -1,0 +1,53 @@
+# Production overrides - Auto-generated
+services:
+  backend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Data Source=sqlserver,1433;Initial Catalog=AttechServerDb;User ID=sa;Password=AttechServer@123;Trust Server Certificate=True;
+      # Domain configuration overrides (override appsettings.Production.json)
+      - AppSettings__BaseUrl=https://attech.online
+      - AdminUrl=https://admin.attech.online
+      # CORS configuration
+      - CorsOrigins__0=https://attech.online
+      - CorsOrigins__1=https://www.attech.online
+      - CorsOrigins__2=https://admin.attech.online
+      # Email configuration (auto-generated from domain if not set in .env)
+      - Contact__AdminEmails=admin@attech.online
+      - Contact__ServiceDepartmentEmails=support@attech.online
+      - Email__From=noreply@attech.online
+      - Email__FromName=ATTECH
+      - Company__SupportEmail=support@attech.online
+      # SMTP configuration
+      - Email__Smtp__Host=smtp.gmail.com
+      - Email__Smtp__Port=587
+      - Email__Smtp__EnableSsl=true
+      - Email__Smtp__Username=your-email@gmail.com
+      - Email__Smtp__Password=your-app-password
+    mem_limit: 1000m
+    mem_reservation: 600m
+    volumes:
+      - /home/ncpt/projects/attech-server/uploads:/app/Uploads
+      - ./logs:/app/Logs
+
+  frontend:
+    mem_limit: 150m
+    mem_reservation: 100m
+
+  sqlserver:
+    environment:
+      SA_PASSWORD: AttechServer@123
+      MSSQL_MEMORY_LIMIT_MB: 1024
+    mem_limit: 1200m
+    mem_reservation: 800m
+
+  proxy:
+    volumes:
+      - ./nginx/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/proxy/conf.d/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - /home/ncpt/projects/attech-server/uploads:/var/www/uploads:ro
+      - certbot_www:/var/www/certbot:ro
+
+volumes:
+  certbot_www:
+    name: certbot_www
