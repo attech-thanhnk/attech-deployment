@@ -9,9 +9,22 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="${SCRIPT_DIR}/backups/database"
 DATE=$(date +%Y%m%d_%H%M%S)
-DB_NAME="AttechServerDb"
-DB_PASSWORD="AttechServer@123"
+
+# Load password from .env.production
+ENV_FILE="${SCRIPT_DIR}/.env.production"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+DB_NAME="${DB_NAME:-AttechServerDb}"
+DB_PASSWORD="${SA_PASSWORD}"
 RETENTION_DAYS=7
+
+# Validate password is set
+if [ -z "$DB_PASSWORD" ]; then
+    echo "[ERROR] SA_PASSWORD not set in .env.production"
+    exit 1
+fi
 
 # Create backup directory
 mkdir -p "${BACKUP_DIR}"

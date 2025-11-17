@@ -9,7 +9,21 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_TYPE="$1"
 BACKUP_FILE="$2"
-DB_PASSWORD="AttechServer@123"
+
+# Load password from .env.production
+ENV_FILE="${SCRIPT_DIR}/.env.production"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+DB_PASSWORD="${SA_PASSWORD}"
+DB_NAME="${DB_NAME:-AttechServerDb}"
+
+# Validate password is set for database restore
+if [ "$BACKUP_TYPE" = "database" ] && [ -z "$DB_PASSWORD" ]; then
+    echo "[ERROR] SA_PASSWORD not set in .env.production"
+    exit 1
+fi
 
 function show_usage() {
     echo "Usage: $0 [database|uploads] [backup-file]"
@@ -65,7 +79,7 @@ case "$BACKUP_TYPE" in
         echo "[2/3] Restoring database..."
         docker exec attechserver-db /opt/mssql-tools18/bin/sqlcmd \
             -S localhost -U sa -P "${DB_PASSWORD}" -C \
-            -Q "RESTORE DATABASE [AttechServerDb] FROM DISK = '/var/opt/mssql/data/restore.bak' WITH REPLACE, MOVE 'AttechServerDbClean' TO '/var/opt/mssql/data/AttechServerDb.mdf', MOVE 'AttechServerDbClean_log' TO '/var/opt/mssql/data/AttechServerDb_log.ldf'"
+            -Q "RESTORE DATABASE [${DB_NAME}] FROM DISK = '/var/opt/mssql/data/restore.bak' WITH REPLACE, MOVE 'AttechServerDbClean' TO '/var/opt/mssql/data/${DB_NAME}.mdf', MOVE 'AttechServerDbClean_log' TO '/var/opt/mssql/data/${DB_NAME}_log.ldf'"
 
         echo "[3/3] Cleaning up..."
         docker exec attechserver-db rm /var/opt/mssql/data/restore.bak

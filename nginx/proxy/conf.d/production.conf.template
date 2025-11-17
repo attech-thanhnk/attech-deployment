@@ -142,15 +142,32 @@ server {
     # Serve uploaded files directly
     location /uploads/ {
         alias /var/www/uploads/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        add_header Access-Control-Allow-Origin "*" always;
-        add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
-        add_header Access-Control-Allow-Headers "*" always;
 
-        # Handle preflight for uploads
-        if ($request_method = 'OPTIONS') {
-            return 204;
+        # 🔒 SECURITY: Block script execution
+        location ~ \.(php|php3|php4|php5|phtml|pl|py|jsp|asp|aspx|sh|cgi|bin|exe|dll)$ {
+            deny all;
+            return 403;
+        }
+
+        # 🔒 SECURITY: Only allow specific file types (images, docs, videos)
+        location ~ \.(jpg|jpeg|png|gif|webp|svg|pdf|doc|docx|xls|xlsx|zip|mp4|mov|avi)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "*" always;
+            add_header X-Content-Type-Options "nosniff" always;
+
+            # Handle preflight for uploads
+            if ($request_method = 'OPTIONS') {
+                return 204;
+            }
+        }
+
+        # Deny all other file types
+        location ~ .* {
+            deny all;
+            return 403;
         }
     }
 

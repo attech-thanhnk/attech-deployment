@@ -11,6 +11,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REMOTE="gdrive"  # Change to your rclone remote name
 DATE=$(date +%Y%m%d_%H%M%S)
 
+# Load password from .env.production
+ENV_FILE="${SCRIPT_DIR}/.env.production"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+DB_PASSWORD="${SA_PASSWORD}"
+DB_NAME="${DB_NAME:-AttechServerDb}"
+
+# Validate password is set
+if [ -z "$DB_PASSWORD" ]; then
+    echo "[ERROR] SA_PASSWORD not set in .env.production"
+    exit 1
+fi
+
 echo "=========================================="
 echo " CLOUD BACKUP - $(date)"
 echo "=========================================="
@@ -37,8 +52,8 @@ echo "[1/3] Backing up database to cloud..."
 # Create temp backup
 TEMP_DB="/tmp/backup_${DATE}.bak"
 docker exec attechserver-db /opt/mssql-tools18/bin/sqlcmd \
-    -S localhost -U sa -P "AttechServer@123" -C \
-    -Q "BACKUP DATABASE [AttechServerDb] TO DISK = N'/var/opt/mssql/data/backup_temp.bak' WITH NOFORMAT, INIT, COMPRESSION"
+    -S localhost -U sa -P "${DB_PASSWORD}" -C \
+    -Q "BACKUP DATABASE [${DB_NAME}] TO DISK = N'/var/opt/mssql/data/backup_temp.bak' WITH NOFORMAT, INIT, COMPRESSION"
 
 docker cp attechserver-db:/var/opt/mssql/data/backup_temp.bak "${TEMP_DB}"
 docker exec attechserver-db rm /var/opt/mssql/data/backup_temp.bak
