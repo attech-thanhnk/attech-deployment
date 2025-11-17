@@ -22,8 +22,10 @@ export DEPLOY_PATH="/home/ncpt/projects/attech-deployment"
 # ==============================================================================
 # DATABASE CONFIGURATION
 # ==============================================================================
-export DB_NAME="AttechServerDb"
-export SA_PASSWORD="AttechServer@123"
+export DB_NAME="${DB_NAME:-AttechServerDb}"
+# ⚠️ SECURITY: Set SA_PASSWORD via environment variable, NOT here!
+# Example: export SA_PASSWORD="your-strong-password" before running scripts
+export SA_PASSWORD="${SA_PASSWORD:-CHANGE_ME_IN_ENV}"
 
 # ==============================================================================
 # PATHS
