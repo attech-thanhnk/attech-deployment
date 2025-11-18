@@ -4,7 +4,6 @@
 # Rate limiting zones are defined in nginx.conf:
 # - zone=api:10m rate=100r/s (API requests)
 # - zone=login:10m rate=10r/m (Login attempts)
-# - zone=options:10m rate=10r/s (OPTIONS preflight requests)
 
 # CORS origin mapping
 map $http_origin $cors_origin {
@@ -35,7 +34,8 @@ server {
 # Frontend HTTPS - https://${FRONTEND_DOMAIN}
 # ============================================
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
     server_name ${FRONTEND_DOMAIN} ${FRONTEND_DOMAIN_WWW};
 
     # SSL Configuration (Let's Encrypt)
@@ -84,7 +84,8 @@ server {
 # Backend API HTTPS - https://${API_DOMAIN}
 # ============================================
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
     server_name ${API_DOMAIN};
 
     # SSL Configuration (Let's Encrypt)
@@ -131,10 +132,8 @@ server {
         # Long timeout for WebSocket/SignalR (24h)
         proxy_read_timeout 86400;
 
-        # Handle preflight OPTIONS with rate limiting
+        # Handle preflight OPTIONS
         if ($request_method = OPTIONS) {
-            # Rate limit: 10 req/s with burst of 5
-            limit_req zone=options burst=5 nodelay;
             return 204;
         }
     }
