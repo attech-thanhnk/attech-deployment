@@ -47,7 +47,7 @@ services:
     mem_reservation: 400m
     cpus: 1.0
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:80/health"]
       interval: 60s
       timeout: 10s
       retries: 2
@@ -69,7 +69,7 @@ services:
     mem_reservation: 100m
     cpus: 0.5
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/health"]
       interval: 30s
       timeout: 5s
       retries: 2
@@ -100,7 +100,7 @@ services:
     mem_reservation: 50m
     cpus: 0.5
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/health"]
       interval: 30s
       timeout: 5s
       retries: 2
