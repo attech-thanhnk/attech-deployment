@@ -67,6 +67,7 @@ server {
         # Prerender Middleware for Bots/Crawlers
         # ========================================
         set $prerender 0;
+        set $proxy_backend "http://frontend:80";
 
         # Detect bot/crawler user agents
         if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp|Slack|Telegram|ZaloBot") {
@@ -88,21 +89,13 @@ server {
             set $prerender 0;
         }
 
-        # Set prerender URL
-        set $prerender_url "";
+        # Set proxy backend based on prerender flag
         if ($prerender = 1) {
-            set $prerender_url "https://$host$request_uri";
+            set $proxy_backend "http://prerender:3000/https://$host$request_uri";
         }
 
-        # Proxy to Prerender service if bot detected
-        if ($prerender = 1) {
-            proxy_pass http://prerender:3000/$prerender_url;
-        }
-
-        # Normal proxy pass to React app for regular users
-        if ($prerender = 0) {
-            proxy_pass http://frontend:80;
-        }
+        # Proxy to selected backend
+        proxy_pass $proxy_backend;
 
         # Common proxy headers
         proxy_http_version 1.1;
