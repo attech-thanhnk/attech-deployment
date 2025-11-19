@@ -61,8 +61,40 @@ server {
     # NOTE: CORS headers are NOT needed for frontend (serves HTML/JS)
     # CORS headers are only configured on the Backend API server block below
 
-    # Frontend React app
+    # Frontend React app with Prerender for SEO
     location / {
+        # ========================================
+        # Prerender Middleware for Bots/Crawlers
+        # ========================================
+        set $prerender 0;
+
+        # Detect bot/crawler user agents
+        if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp|Slack|Telegram|ZaloBot") {
+            set $prerender 1;
+        }
+
+        # Support for _escaped_fragment_ parameter
+        if ($args ~ "_escaped_fragment_") {
+            set $prerender 1;
+        }
+
+        # Don't prerender if already from prerender service
+        if ($http_x_prerender) {
+            set $prerender 0;
+        }
+
+        # Don't prerender static files
+        if ($uri ~* "\.(js|css|xml|less|png|jpg|jpeg|gif|pdf|doc|txt|ico|rss|zip|mp3|rar|exe|wmv|doc|avi|ppt|mpg|mpeg|tif|wav|mov|psd|ai|xls|mp4|m4a|swf|dat|dmg|iso|flv|m4v|torrent|ttf|woff|woff2|svg|eot)") {
+            set $prerender 0;
+        }
+
+        # Proxy to Prerender service if bot detected
+        if ($prerender = 1) {
+            rewrite .* /$scheme://$host$request_uri? break;
+            proxy_pass http://prerender:3000;
+        }
+
+        # Normal proxy pass to React app for regular users
         proxy_pass http://frontend:80;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

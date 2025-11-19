@@ -78,6 +78,33 @@ services:
     expose:
       - "80"
 
+  # Prerender Service for SEO (Bot/Crawler support)
+  prerender:
+    image: tvanro/prerender-alpine:latest
+    container_name: attech-prerender
+    environment:
+      - PRERENDER_NUM_WORKERS=1
+      - PRERENDER_NUM_ITERATIONS=10
+      - PAGE_LOAD_TIMEOUT=20000
+      - WAIT_AFTER_LAST_REQUEST=500
+      - JS_TIMEOUT=10000
+      - ALLOWED_DOMAINS=attech.online,www.attech.online
+    networks:
+      - attech-network
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+      interval: 60s
+      timeout: 10s
+      retries: 2
+      start_period: 30s
+    # Internal only - not exposed to host
+    expose:
+      - "3000"
+
   # Nginx Reverse Proxy (Entry point)
   proxy:
     image: nginx:alpine
