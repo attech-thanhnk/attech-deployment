@@ -66,8 +66,11 @@ server {
         # ========================================
         # Prerender Middleware for Bots/Crawlers
         # ========================================
+        # Docker DNS resolver (127.0.0.11 is Docker's embedded DNS)
+        resolver 127.0.0.11 valid=30s;
+
         set $prerender 0;
-        set $proxy_backend "http://frontend:80";
+        set $proxy_backend "frontend:80";
 
         # Detect bot/crawler user agents
         if ($http_user_agent ~* "googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|whatsapp|Slack|Telegram|ZaloBot") {
@@ -91,11 +94,11 @@ server {
 
         # Set proxy backend based on prerender flag
         if ($prerender = 1) {
-            set $proxy_backend "http://prerender:3000/https://$host$request_uri";
+            set $proxy_backend "prerender:3000/https://$host$request_uri";
         }
 
         # Proxy to selected backend
-        proxy_pass $proxy_backend;
+        proxy_pass http://$proxy_backend;
 
         # Common proxy headers
         proxy_http_version 1.1;
